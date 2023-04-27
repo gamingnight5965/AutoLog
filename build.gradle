@@ -26,7 +26,6 @@ repositories {
 }
 
 dependencies {
-    api wpi.java.deps.wpilib()
     api wpi.java.vendor.java()
 
     api 'com.squareup:kotlinpoet-javapoet:1.12.0'
