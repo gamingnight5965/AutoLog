@@ -1,3 +1,5 @@
+package org.frc1778.junction
+
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.javapoet.KTypeName
 import com.squareup.kotlinpoet.javapoet.KotlinPoetJavaPoetPreview
@@ -72,7 +74,7 @@ class AutoLogProcessor : AbstractProcessor() {
     @OptIn(DelicateKotlinPoetApi::class)
     override fun process(annotations: MutableSet<out TypeElement>?, roundEnv: RoundEnvironment?): Boolean {
         val annotationOptional =
-            annotations!!.stream().filter { te -> te.simpleName.toString() == "AutoLog" }.findFirst()
+            annotations!!.stream().filter { te -> te.simpleName.toString() == "org.frc1778.junction.AutoLog" }.findFirst()
         if (!annotationOptional.isPresent) {
             return false
         }
@@ -115,7 +117,7 @@ class AutoLogProcessor : AbstractProcessor() {
                             extraText = "\"$fieldType\" is not supported"
                         }
                         System.err.println(
-                            "[AutoLog] Unkonwn type for \"" + simpleName + "\" from \"" + classElement.simpleName + "\" (" + extraText + ")"
+                            "[org.frc1778.junction.AutoLog] Unkonwn type for \"" + simpleName + "\" from \"" + classElement.simpleName + "\" (" + extraText + ")"
                         )
                     } else {
                         val getterName = "get$logType"
