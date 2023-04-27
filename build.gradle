@@ -6,8 +6,9 @@ plugins {
     id "maven-publish"
 }
 
-    apply plugin: "org.jetbrains.kotlin.jvm"
-    apply plugin: "edu.wpi.first.GradleRIO"
+apply plugin: "org.jetbrains.kotlin.jvm"
+apply plugin: "edu.wpi.first.GradleRIO"
+apply plugin: "maven-publish"
 
 
 repositories {
@@ -45,15 +46,17 @@ test {
 }
 
 compileKotlin {
-        kotlinOptions {
-            jvmTarget = "1.8"
-            freeCompilerArgs = ["-Xjvm-default=compatibility"]
-        }
+    kotlinOptions {
+        jvmTarget = "1.8"
+        freeCompilerArgs = ["-Xjvm-default=compatibility"]
     }
+}
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
+            groupId = 'org.gamingnight'
+            artifactId = 'autolog'
             from components.java
         }
     }
