@@ -1,3 +1,3 @@
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.TYPE)
+@Target(AnnotationTarget.CLASS)
 annotation class AutoLog() {}
