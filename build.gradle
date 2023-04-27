@@ -1,14 +1,12 @@
-import edu.wpi.first.gradlerio.deploy.roborio.RoboRIO
+
 
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.8.0' apply false
-    id "edu.wpi.first.GradleRIO" version "2023.4.3" apply false
     id "maven-publish"
     id "idea"
 }
 
 apply plugin: "org.jetbrains.kotlin.jvm"
-apply plugin: "edu.wpi.first.GradleRIO"
 apply plugin: "maven-publish"
 
 
@@ -21,7 +19,6 @@ repositories {
             password = "\u0067\u0068\u0070\u005f\u006e\u0056\u0051\u006a\u0055\u004f\u004c\u0061\u0079\u0066\u006e\u0078\u006e\u0037\u0051\u0049\u0054\u0042\u0032\u004c\u004a\u006d\u0055\u0070\u0073\u0031\u006d\u0037\u004c\u005a\u0030\u0076\u0062\u0070\u0063\u0051"
         }
     }
-    maven { url "https://frcmaven.wpi.edu/artifactory/release" }
     maven { url "https://jitpack.io" }
     mavenLocal()
 }
@@ -31,7 +28,6 @@ dependencies {
 
     api 'com.squareup:kotlinpoet-javapoet:1.12.0'
     api 'com.squareup:kotlinpoet:0.7.0'
-    api "org.littletonrobotics.akit.junction:junction-core:2.2.4"
 
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
