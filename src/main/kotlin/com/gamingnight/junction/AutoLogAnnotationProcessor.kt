@@ -87,7 +87,6 @@ class AutoLogAnnotationProcessor(
                 val logName =
                     simpleName.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 
-                val getterName = "get$logName"
 
 
                 val fieldType = fieldElement.type.resolve()
@@ -96,6 +95,7 @@ class AutoLogAnnotationProcessor(
                 } else {
                     LOGGALE_LIST_TYPE_LOOKUP[fieldType.arguments.first().type!!.resolve().declaration.simpleName.asString()]
                 }
+                val getterName = "get$logType"
 
                 val toLogConversion = if (fieldType.arguments.isNotEmpty()) {
                     ".to${fieldType.arguments.first().type!!.resolve().declaration.simpleName.asString()}Array()"
@@ -127,6 +127,7 @@ class AutoLogAnnotationProcessor(
             cloneBuilder.addCode("return copy\n")
 
             val type = TypeSpec.classBuilder(autoLoggedClassName)
+                .superclass(ClassName(packageName, classDeclaration.simpleName.asString()))
                 .addSuperinterface(LOGGABLE_INPUTS_TYPE)
                 .addSuperinterface(ClassName("java.lang", "Cloneable"))
                 .addFunction(toLogBuilder.build())
