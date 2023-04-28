@@ -1,3 +1,5 @@
+package org.frc1778.junction
+
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.KSPLogger
@@ -19,34 +21,12 @@ import com.squareup.kotlinpoet.javapoet.KotlinPoetJavaPoetPreview
 import com.squareup.kotlinpoet.javapoet.toJTypeName
 import com.squareup.kotlinpoet.javapoet.toKTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
-import org.frc1778.junction.AutoLog
 import java.util.*
 
-@OptIn(KotlinPoetJavaPoetPreview::class)
 
 class AutoLogAnnotationProcessor(
     val codeGenerator: CodeGenerator, val logger: KSPLogger
 ) : SymbolProcessor {
-    private val LOG_TABLE_TYPE: KTypeName =
-        ClassName("org.littletonrobotics.junction", "LogTable").toJTypeName().toKTypeName()
-    private val LOGGABLE_INPUTS_TYPE: KTypeName = ClassName(
-        "org.littletonrobotics.junction.inputs", "LoggableInputs"
-    ).toJTypeName().toKTypeName()
-
-
-    private val LOGGABLE_TYPE_LOOKUP: MutableMap<String, String> = hashMapOf(
-        "List<Byte>" to "Raw",
-        "Boolean" to "Boolean",
-        "Long" to "Integer",
-        "Float" to "Float",
-        "Double" to "Double",
-        "String" to "String",
-        "List<Boolean>" to "BooleanArray",
-        "List<Long>" to "IntegerArray",
-        "List<Float>" to "FloatArray",
-        "List<Double>" to "DoubleArray",
-        "List<String>" to "StringArray"
-    )
 
     @OptIn(DelicateKotlinPoetApi::class)
     override fun process(resolver: Resolver): List<KSAnnotated> {
@@ -62,7 +42,34 @@ class AutoLogAnnotationProcessor(
 
     inner class AutoLogVisitor : KSVisitorVoid() {
 
+
+        @OptIn(KotlinPoetJavaPoetPreview::class)
         override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
+
+            val LOG_TABLE_TYPE: KTypeName =
+                ClassName("org.littletonrobotics.junction", "LogTable").toJTypeName().toKTypeName()
+            val LOGGABLE_INPUTS_TYPE: KTypeName = ClassName(
+                "org.littletonrobotics.junction.inputs", "LoggableInputs"
+            ).toJTypeName().toKTypeName()
+
+
+            val LOGGABLE_TYPE_LOOKUP: MutableMap<String, String> = hashMapOf(
+                "Boolean" to "Boolean",
+                "Long" to "Integer",
+                "Float" to "Float",
+                "Double" to "Double",
+                "String" to "String",
+            )
+
+            val LOGGALE_LIST_TYPE_LOOKUP: MutableMap<String, String> = hashMapOf(
+                "Byte" to "Raw",
+                "Boolean" to "BooleanArray",
+                "Long" to "IntegerArray",
+                "Float" to "FloatArray",
+                "Double" to "DoubleArray",
+                "String" to "StringArray"
+            )
+
             val packageName = classDeclaration.containingFile!!.packageName.asString()
             val autoLoggedClassName: String = "${classDeclaration.simpleName.asString()}AutoLogged"
 
@@ -84,7 +91,11 @@ class AutoLogAnnotationProcessor(
 
 
                 val fieldType = fieldElement.type.resolve()
-                val logType = LOGGABLE_TYPE_LOOKUP[fieldType.declaration.simpleName.asString()]
+                val logType: String? = if (fieldType.declaration.simpleName.asString() != "List") {
+                    LOGGABLE_TYPE_LOOKUP[fieldType.declaration.simpleName.asString()]
+                } else {
+                    LOGGALE_LIST_TYPE_LOOKUP[fieldType.arguments.first().type!!.resolve().declaration.simpleName.asString()]
+                }
 
                 val toLogConversion = if (fieldType.arguments.isNotEmpty()) {
                     ".to${fieldType.arguments.first().type!!.resolve().declaration.simpleName.asString()}Array()"
@@ -123,7 +134,7 @@ class AutoLogAnnotationProcessor(
                 .addFunction(cloneBuilder.build())
                 .build()
 
-            val kotlinFile = FileSpec.builder(packageName, type.toString()).build()
+            val kotlinFile = FileSpec.builder(packageName, autoLoggedClassName).addType(type).build()
 
             try {
                 kotlinFile.writeTo(codeGenerator, Dependencies(true, classDeclaration.containingFile!!))
