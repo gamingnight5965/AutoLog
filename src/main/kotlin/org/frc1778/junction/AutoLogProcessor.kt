@@ -74,7 +74,7 @@ class AutoLogProcessor : AbstractProcessor() {
     @OptIn(DelicateKotlinPoetApi::class)
     override fun process(annotations: MutableSet<out TypeElement>?, roundEnv: RoundEnvironment?): Boolean {
         val annotationOptional =
-            annotations!!.stream().filter { te -> te.simpleName.toString() == "org.frc1778.junction.AutoLog" }.findFirst()
+            annotations!!.stream().filter { te -> te.simpleName.toString() == "AutoLog" }.findFirst()
         if (!annotationOptional.isPresent) {
             return false
         }
