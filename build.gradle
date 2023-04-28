@@ -34,6 +34,8 @@ dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.0"
 
+	implementation "com.google.devtools.ksp:symbol-processing-api:1.6.20-1.0.5"
+
 }
 
 test {

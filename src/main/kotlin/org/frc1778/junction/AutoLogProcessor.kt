@@ -93,7 +93,7 @@ class AutoLogProcessor : AbstractProcessor() {
                 FunSpec.builder("fromLog").addModifiers(KModifier.OVERRIDE).addParameter("table", LOG_TABLE_TYPE)
 
             val cloneBuilder = FunSpec.builder("clone")
-                .addCode("%L copy = new %L\n", autoLoggedClassName, autoLoggedClassName)
+                .addCode("%L copy = %L()\n", autoLoggedClassName, autoLoggedClassName)
                 .returns(ClassName(autoLoggedPackage ?: "", autoLoggedClassName))
 
             classElement.enclosedElements.filter { element -> element.kind == ElementKind.FIELD }
