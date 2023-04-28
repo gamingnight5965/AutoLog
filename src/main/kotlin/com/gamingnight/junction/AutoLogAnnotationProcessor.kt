@@ -76,7 +76,7 @@ class AutoLogAnnotationProcessor(
             val toLogBuilder =
                 FunSpec.builder("toLog").addModifiers(KModifier.OVERRIDE).addParameter("table", LOG_TABLE_TYPE)
 
-            val fromLogBuilder = FunSpec.builder("fromLog").addParameter("table", LOG_TABLE_TYPE)
+            val fromLogBuilder = FunSpec.builder("fromLog").addModifiers(KModifier.OVERRIDE).addParameter("table", LOG_TABLE_TYPE)
 
             val cloneBuilder = FunSpec.builder("clone")
                 .addCode("val copy: %L = %L()\n", autoLoggedClassName, autoLoggedClassName)
@@ -120,7 +120,7 @@ class AutoLogAnnotationProcessor(
                     )
 
                     cloneBuilder.addCode(
-                        "copy%L = this.%L\n", simpleName, simpleName
+                        "copy.%L = this.%L\n", simpleName, simpleName
                     )
                 }
             }
