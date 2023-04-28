@@ -1,4 +1,4 @@
-package org.frc1778.junction
+package com.gamingnight.junction
 
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS)

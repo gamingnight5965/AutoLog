@@ -1,4 +1,4 @@
-package org.frc1778.junction
+package com.gamingnight.junction
 
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
