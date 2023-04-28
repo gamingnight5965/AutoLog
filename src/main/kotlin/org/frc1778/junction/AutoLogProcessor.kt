@@ -81,8 +81,6 @@ class AutoLogProcessor : AbstractProcessor() {
 
         val annotation: TypeElement = annotationOptional.get()
 
-
-
         roundEnv!!.getElementsAnnotatedWith(annotation).forEach { classElement ->
             val autoLoggedClassName: String = classElement.simpleName.toString() + "AutoLogged";
             val autoLoggedPackage: String? = getPackageName(classElement)
