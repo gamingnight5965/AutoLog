@@ -12,15 +12,11 @@ import com.google.devtools.ksp.symbol.KSVisitorVoid
 import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.DelicateKotlinPoetApi
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.javapoet.KTypeName
-import com.squareup.kotlinpoet.javapoet.KotlinPoetJavaPoetPreview
-import com.squareup.kotlinpoet.javapoet.toJTypeName
-import com.squareup.kotlinpoet.javapoet.toKTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
 import java.util.*
 
@@ -29,7 +25,6 @@ class AutoLogAnnotationProcessor(
     val codeGenerator: CodeGenerator, val logger: KSPLogger
 ) : SymbolProcessor {
 
-    @OptIn(DelicateKotlinPoetApi::class)
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val annotatedClasses = resolver.getSymbolsWithAnnotation("org.littletonrobotics.junction.AutoLog")
         val ret = annotatedClasses.filter { !it.validate() }.toList()
@@ -44,17 +39,16 @@ class AutoLogAnnotationProcessor(
     inner class AutoLogVisitor : KSVisitorVoid() {
 
 
-        @OptIn(KotlinPoetJavaPoetPreview::class)
         override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
             if (Modifier.OPEN !in classDeclaration.modifiers) logger.error(
                 "Auto Logged Classes Must Be Open", classDeclaration
             )
 
-            val LOG_TABLE_TYPE: KTypeName =
-                ClassName("org.littletonrobotics.junction", "LogTable").toJTypeName().toKTypeName()
-            val LOGGABLE_INPUTS_TYPE: KTypeName = ClassName(
+            val LOG_TABLE_TYPE: TypeName =
+                ClassName("org.littletonrobotics.junction", "LogTable")
+            val LOGGABLE_INPUTS_TYPE: TypeName = ClassName(
                 "org.littletonrobotics.junction.inputs", "LoggableInputs"
-            ).toJTypeName().toKTypeName()
+            )
 
 
             val LOGGABLE_TYPE_LOOKUP: Map<String, String> = hashMapOf(
