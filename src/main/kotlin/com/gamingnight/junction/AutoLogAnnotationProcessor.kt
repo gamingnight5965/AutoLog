@@ -31,7 +31,7 @@ class AutoLogAnnotationProcessor(
 
     @OptIn(DelicateKotlinPoetApi::class)
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val annotatedClasses = resolver.getSymbolsWithAnnotation("org.littletonrobotics.junction.AutoLog")
+        val annotatedClasses = resolver.getSymbolsWithAnnotation(AutoLog::class.qualifiedName!!)
         val ret = annotatedClasses.filter { !it.validate() }.toList()
 
         annotatedClasses.filter { it is KSClassDeclaration && it.validate() }
