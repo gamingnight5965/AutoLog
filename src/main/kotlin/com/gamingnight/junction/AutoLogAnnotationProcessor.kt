@@ -51,7 +51,7 @@ class AutoLogAnnotationProcessor(
             )
 
 
-            val LOGGABLE_TYPE_LOOKUP: Map<String, String> = hashMapOf(
+            val LOGGABLE_TYPE_LOOKUP: MutableMap<String, String> = hashMapOf(
                 "Boolean" to "Boolean",
                 "Long" to "Integer",
                 "Float" to "Float",
@@ -59,7 +59,7 @@ class AutoLogAnnotationProcessor(
                 "String" to "String",
             )
 
-            val LOGGALE_LIST_TYPE_LOOKUP: Map<String, String> = hashMapOf(
+            val LOGGALE_LIST_TYPE_LOOKUP: MutableMap<String, String> = hashMapOf(
                 "Byte" to "Raw",
                 "Boolean" to "BooleanArray",
                 "Long" to "IntegerArray",
@@ -68,7 +68,7 @@ class AutoLogAnnotationProcessor(
                 "String" to "StringArray"
             )
 
-            val UNLOGGABLE_TYPES_LOOKUP: Map<String, String> = hashMapOf(
+            val UNLOGGABLE_TYPES_LOOKUP: MutableMap<String, String> = hashMapOf(
                 "MutableList" to "List", "Int" to "Long"
             )
 
@@ -110,7 +110,9 @@ class AutoLogAnnotationProcessor(
 
                 if (logType == null) {
                     val typeSuggestion = UNLOGGABLE_TYPES_LOOKUP[fieldType.declaration.simpleName.asString()]
-                        ?: UNLOGGABLE_TYPES_LOOKUP[fieldType.arguments.firstOrNull()?.type!!.resolve().declaration.simpleName.asString()]
+                        ?: UNLOGGABLE_TYPES_LOOKUP[fieldType.arguments.firstOrNull()?.let {
+                            it.type!!.resolve().declaration.simpleName.asString()
+                        } ?: ""]
                     var extraText = if (typeSuggestion != null) "Did you mean to use\"$typeSuggestion\" instead?"
                     else "\"${fieldType.declaration.simpleName.asString()}\" is not supported"
 
