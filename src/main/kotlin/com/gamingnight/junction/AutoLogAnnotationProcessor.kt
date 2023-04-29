@@ -9,6 +9,7 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSVisitorVoid
+import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.DelicateKotlinPoetApi
@@ -30,7 +31,7 @@ class AutoLogAnnotationProcessor(
 
     @OptIn(DelicateKotlinPoetApi::class)
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val annotatedClasses = resolver.getSymbolsWithAnnotation(AutoLog::class.qualifiedName!!)
+        val annotatedClasses = resolver.getSymbolsWithAnnotation("org.littletonrobotics.junction.AutoLog")
         val ret = annotatedClasses.filter { !it.validate() }.toList()
 
         annotatedClasses.filter { it is KSClassDeclaration && it.validate() }
@@ -45,6 +46,9 @@ class AutoLogAnnotationProcessor(
 
         @OptIn(KotlinPoetJavaPoetPreview::class)
         override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
+            if (Modifier.OPEN !in classDeclaration.modifiers) logger.error(
+                "Auto Logged Classes Must Be Open", classDeclaration
+            )
 
             val LOG_TABLE_TYPE: KTypeName =
                 ClassName("org.littletonrobotics.junction", "LogTable").toJTypeName().toKTypeName()
@@ -53,7 +57,7 @@ class AutoLogAnnotationProcessor(
             ).toJTypeName().toKTypeName()
 
 
-            val LOGGABLE_TYPE_LOOKUP: MutableMap<String, String> = hashMapOf(
+            val LOGGABLE_TYPE_LOOKUP: Map<String, String> = hashMapOf(
                 "Boolean" to "Boolean",
                 "Long" to "Integer",
                 "Float" to "Float",
@@ -61,7 +65,7 @@ class AutoLogAnnotationProcessor(
                 "String" to "String",
             )
 
-            val LOGGALE_LIST_TYPE_LOOKUP: MutableMap<String, String> = hashMapOf(
+            val LOGGALE_LIST_TYPE_LOOKUP: Map<String, String> = hashMapOf(
                 "Byte" to "Raw",
                 "Boolean" to "BooleanArray",
                 "Long" to "IntegerArray",
@@ -70,13 +74,18 @@ class AutoLogAnnotationProcessor(
                 "String" to "StringArray"
             )
 
+            val UNLOGGABLE_TYPES_LOOKUP: Map<String, String> = hashMapOf(
+                "MutableList" to "List", "Int" to "Long"
+            )
+
             val packageName = classDeclaration.containingFile!!.packageName.asString()
             val autoLoggedClassName: String = "${classDeclaration.simpleName.asString()}AutoLogged"
 
             val toLogBuilder =
                 FunSpec.builder("toLog").addModifiers(KModifier.OVERRIDE).addParameter("table", LOG_TABLE_TYPE)
 
-            val fromLogBuilder = FunSpec.builder("fromLog").addModifiers(KModifier.OVERRIDE).addParameter("table", LOG_TABLE_TYPE)
+            val fromLogBuilder =
+                FunSpec.builder("fromLog").addModifiers(KModifier.OVERRIDE).addParameter("table", LOG_TABLE_TYPE)
 
             val cloneBuilder = FunSpec.builder("clone")
                 .addCode("val copy: %L = %L()\n", autoLoggedClassName, autoLoggedClassName)
@@ -88,7 +97,6 @@ class AutoLogAnnotationProcessor(
                     simpleName.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 
 
-
                 val fieldType = fieldElement.type.resolve()
                 val logType: String? = if (fieldType.declaration.simpleName.asString() != "List") {
                     LOGGABLE_TYPE_LOOKUP[fieldType.declaration.simpleName.asString()]
@@ -98,14 +106,22 @@ class AutoLogAnnotationProcessor(
                 val getterName = "get$logType"
 
                 val toLogConversion = if (fieldType.arguments.isNotEmpty()) {
-                    ".to${fieldType.arguments.first().type!!.resolve().declaration.simpleName.asString()}Array()"
+                    when (val type = fieldType.arguments.first().type!!.resolve().declaration.simpleName.asString()) {
+                        "String" -> ".toTypedArray()"
+                        else -> ".to${type}Array()"
+                    }
                 } else ""
 
                 val fromLogConversion = if (fieldType.arguments.isNotEmpty()) ".asList()" else ""
 
                 if (logType == null) {
+                    val typeSuggestion = UNLOGGABLE_TYPES_LOOKUP[fieldType.declaration.simpleName.asString()]
+                        ?: UNLOGGABLE_TYPES_LOOKUP[fieldType.arguments.firstOrNull()?.type!!.resolve().declaration.simpleName.asString()]
+                    var extraText = if (typeSuggestion != null) "Did you mean to use\"$typeSuggestion\" instead?"
+                    else "\"${fieldType.declaration.simpleName.asString()}\" is not supported"
+
                     System.err.println(
-                        "[org.frc1778.junction.AutoLog] Unkonwn type for \"" + simpleName + "\" from \"" + classDeclaration.simpleName.asString() + "\" (" + fieldElement.type.resolve().declaration.simpleName + ")"
+                        "[org.frc1778.junction.AutoLog] Unkonwn type for \"" + simpleName + "\" from \"" + classDeclaration.simpleName.asString() + "\" (" + extraText + ")"
                     )
                 } else {
                     toLogBuilder.addCode("table.put(%S, %L)\n", logName, simpleName + toLogConversion)
