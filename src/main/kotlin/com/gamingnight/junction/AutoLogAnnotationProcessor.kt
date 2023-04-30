@@ -83,6 +83,7 @@ class AutoLogAnnotationProcessor(
 
             val cloneBuilder = FunSpec.builder("clone")
                 .addCode("val copy: %L = %L()\n", autoLoggedClassName, autoLoggedClassName)
+                .addModifiers(KModifier.OVERRIDE)
                 .returns(ClassName(packageName, autoLoggedClassName))
 
             classDeclaration.declarations.filterIsInstance<KSPropertyDeclaration>().forEach { fieldElement ->
@@ -141,7 +142,7 @@ class AutoLogAnnotationProcessor(
             val type = TypeSpec.classBuilder(autoLoggedClassName)
                 .superclass(ClassName(packageName, classDeclaration.simpleName.asString()))
                 .addSuperinterface(LOGGABLE_INPUTS_TYPE)
-                .addSuperinterface(ClassName("java.lang", "Cloneable"))
+                .addSuperinterface(ClassName("kotlin", "Cloneable"))
                 .addFunction(toLogBuilder.build())
                 .addFunction(fromLogBuilder.build())
                 .addFunction(cloneBuilder.build())
