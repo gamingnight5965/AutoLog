@@ -57,6 +57,7 @@ class AutoLogAnnotationProcessor(
                 "Float" to "Float",
                 "Double" to "Double",
                 "String" to "String",
+                "SIUnit" to "Double",
             )
 
             val LOGGALE_LIST_TYPE_LOOKUP: MutableMap<String, String> = hashMapOf(
