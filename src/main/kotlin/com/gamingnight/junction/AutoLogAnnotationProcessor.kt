@@ -132,7 +132,7 @@ class AutoLogAnnotationProcessor(
                     fromLogBuilder.addCode(
                         "%L = %Ltable.%L(%S, %L)%L\n",
                         simpleName,
-                        if (wrapInSIUnit) "SIUnit(" else "",
+                        if (wrapInSIUnit) "org.ghrobotics.lib.mathematics.units.SIUnit(" else "",
                         getterName,
                         logName,
                         simpleName + toLogConversion,
@@ -157,7 +157,7 @@ class AutoLogAnnotationProcessor(
 
             val kotlinFile = FileSpec.builder(packageName, autoLoggedClassName)
                 .addType(type)
-                .addImport(ClassName("org.ghrobotics.lib.mathematics.units", "SIUnit"))
+//                .addImport(ClassName("org.ghrobotics.lib.mathematics.units", "SIUnit"))
                 .build()
 
             try {
