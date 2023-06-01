@@ -44,8 +44,7 @@ class AutoLogAnnotationProcessor(
                 "Auto Logged Classes Must Be Open", classDeclaration
             )
 
-            val LOG_TABLE_TYPE: TypeName =
-                ClassName("org.littletonrobotics.junction", "LogTable")
+            val LOG_TABLE_TYPE: TypeName = ClassName("org.littletonrobotics.junction", "LogTable")
             val LOGGABLE_INPUTS_TYPE: TypeName = ClassName(
                 "org.littletonrobotics.junction.inputs", "LoggableInputs"
             )
@@ -101,14 +100,21 @@ class AutoLogAnnotationProcessor(
                 }
                 val getterName = "get$logType"
 
-                val toLogConversion = if (fieldType.arguments.isNotEmpty()) {
-                    when (val type = fieldType.arguments.first().type!!.resolve().declaration.simpleName.asString()) {
-                        "String" -> ".toTypedArray()"
-                        else -> ".to${type}Array()"
-                    }
-                } else ""
+                val toLogConversion =
+                    if(fieldType.declaration.simpleName.asString() == "SIUnit") {
+                      ".value"
+                    } else if (fieldType.arguments.isNotEmpty()) {
+                        when (val type =
+                            fieldType.arguments.first().type!!.resolve().declaration.simpleName.asString()) {
+                            "String" -> ".toTypedArray()"
+                            else -> ".to${type}Array()"
+                        }
+                    } else ""
 
-                val fromLogConversion = if (fieldType.arguments.isNotEmpty()) ".asList()" else ""
+                val fromLogConversion =
+                    if(fieldType.declaration.simpleName.asString() == "SIUnit") ")" else if (fieldType.arguments.isNotEmpty()) ".asList()" else ""
+
+                val wrapInSIUnit: Boolean = fieldType.declaration.simpleName.asString() == "SIUnit"
 
                 if (logType == null) {
                     val typeSuggestion = UNLOGGABLE_TYPES_LOOKUP[fieldType.declaration.simpleName.asString()]
@@ -124,9 +130,11 @@ class AutoLogAnnotationProcessor(
                 } else {
                     toLogBuilder.addCode("table.put(%S, %L)\n", logName, simpleName + toLogConversion)
 
+
                     fromLogBuilder.addCode(
-                        "%L = table.%L(%S, %L)%L\n",
+                        "%L = %Ltable.%L(%S, %L)%L\n",
                         simpleName,
+                        if (wrapInSIUnit) "SIUnit(" else "",
                         getterName,
                         logName,
                         simpleName + toLogConversion,
