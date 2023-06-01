@@ -100,19 +100,17 @@ class AutoLogAnnotationProcessor(
                 }
                 val getterName = "get$logType"
 
-                val toLogConversion =
-                    if(fieldType.declaration.simpleName.asString() == "SIUnit") {
-                      ".value"
-                    } else if (fieldType.arguments.isNotEmpty()) {
-                        when (val type =
-                            fieldType.arguments.first().type!!.resolve().declaration.simpleName.asString()) {
-                            "String" -> ".toTypedArray()"
-                            else -> ".to${type}Array()"
-                        }
-                    } else ""
+                val toLogConversion = if (fieldType.declaration.simpleName.asString() == "SIUnit") {
+                    ".value"
+                } else if (fieldType.arguments.isNotEmpty()) {
+                    when (val type = fieldType.arguments.first().type!!.resolve().declaration.simpleName.asString()) {
+                        "String" -> ".toTypedArray()"
+                        else -> ".to${type}Array()"
+                    }
+                } else ""
 
                 val fromLogConversion =
-                    if(fieldType.declaration.simpleName.asString() == "SIUnit") ")" else if (fieldType.arguments.isNotEmpty()) ".asList()" else ""
+                    if (fieldType.declaration.simpleName.asString() == "SIUnit") ")" else if (fieldType.arguments.isNotEmpty()) ".asList()" else ""
 
                 val wrapInSIUnit: Boolean = fieldType.declaration.simpleName.asString() == "SIUnit"
 
@@ -157,7 +155,10 @@ class AutoLogAnnotationProcessor(
                 .addFunction(cloneBuilder.build())
                 .build()
 
-            val kotlinFile = FileSpec.builder(packageName, autoLoggedClassName).addType(type).build()
+            val kotlinFile = FileSpec.builder(packageName, autoLoggedClassName)
+                .addType(type)
+                .addImport(ClassName("org.ghrobotics.lib.mathematics.units", "SIUnit"))
+                .build()
 
             try {
                 kotlinFile.writeTo(codeGenerator, Dependencies(true, classDeclaration.containingFile!!))
