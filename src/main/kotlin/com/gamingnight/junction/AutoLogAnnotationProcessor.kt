@@ -98,7 +98,7 @@ class AutoLogAnnotationProcessor(
                 } else {
                     LOGGALE_LIST_TYPE_LOOKUP[fieldType.arguments.first().type!!.resolve().declaration.simpleName.asString()]
                 }
-                val getterName = "get$logType"
+                val getterName = "get"
 
                 val toLogConversion = if (fieldType.declaration.simpleName.asString() == "SIUnit") {
                     ".value"
